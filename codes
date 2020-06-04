@@ -1,0 +1,107 @@
+#include <FastLED.h>
+
+#define LED_PIN     7
+#define NUM_LEDS    24
+#define BRIGHTNESS  5
+const int soundpin=A1;
+const int threshold=120; // sets threshold for sound sensor
+int buzzer =10;
+
+unsigned long startMillis;
+unsigned long currentMillis;
+const unsigned long period = 2000;
+
+unsigned long previousMillis=0; //will store last time led updated
+const unsigned long startbuzz = 20000; //buzz after 20sec inactive (for demo purpose)
+const unsigned long restart = 25000; //reset after 25sec with no breath detected (for demo purpose)
+
+
+CRGB leds[NUM_LEDS];
+
+void setup() {
+
+  Serial.begin(9600);
+  pinMode(soundpin, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
+  
+}
+
+int i=0;
+
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
+void loop() {
+
+  int volume=analogRead(soundpin); //read analog data from sensor
+  Serial.println(volume);
+  delay(20);
+
+  currentMillis=millis();
+  
+  if(currentMillis - startMillis >=period && volume > threshold) {
+    startMillis=currentMillis;
+    leds[i] = CRGB(224, 224, 0); //white
+    FastLED.show();
+    if (i++ >= 6) i = 0;
+
+    leds[7] = CRGB(255, 69, 0); //gold
+    leds[8] = CRGB(255, 69, 0); 
+    leds[9] = CRGB(255, 69, 0);
+    leds[10] = CRGB(255, 69, 0);
+    leds[11] = CRGB(255, 69, 0); 
+    leds[14] = CRGB(255, 69, 0);
+    leds[15] = CRGB(255, 69, 0);
+    leds[16] = CRGB(255, 69, 0);
+    leds[17] = CRGB(255, 69, 0);
+    FastLED.show();
+    noTone(buzzer);
+
+  }
+  
+  if(currentMillis - previousMillis > blue) {
+
+    //save last time blinked the led
+    previousMillis = currentMillis;
+    
+    leds[7] = CRGB(0, 0, 255); //blue
+    leds[8] = CRGB(0, 0, 255);
+    leds[9] = CRGB(0, 0, 255);
+    leds[10] = CRGB(0, 0, 255);
+    leds[11] = CRGB(0, 0, 255); 
+    leds[14] = CRGB(0, 0, 255); 
+    leds[15] = CRGB(0, 0, 255); 
+    leds[16] = CRGB(0, 0, 255); 
+    leds[17] = CRGB(0, 0, 255); 
+    FastLED.show();
+
+  }
+  
+//when exercise done, all light up.
+
+  if (leds[6]==CRGB(224, 224, 0)) {
+
+    leds[7] = CRGB(255, 69, 0); //gold
+    leds[8] = CRGB(255, 69, 0); 
+    leds[9] = CRGB(255, 69, 0);
+    leds[10] = CRGB(255, 69, 0);
+    leds[11] = CRGB(255, 69, 0); 
+    leds[14] = CRGB(255, 69, 0);
+    leds[15] = CRGB(255, 69, 0);
+    leds[16] = CRGB(255, 69, 0);
+    leds[17] = CRGB(255, 69, 0);
+    FastLED.show();
+
+  }
+
+  if (currentMillis - startMillis >=startbuzz && volume < threshold) {
+      tone(buzzer,500);
+      
+      
+    }
+
+  if (currentMillis - startMillis >=restart && volume < threshold) {
+      resetFunc();
+    }
+  }
+  
